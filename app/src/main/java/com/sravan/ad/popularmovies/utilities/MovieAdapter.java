@@ -30,15 +30,17 @@ public class MovieAdapter extends ArrayAdapter<TMDBMovie> {
         this.movieList = movieList;
     }
 
+    @Override
+    public long getItemId(int position) {
+        return this.movieList.get(position).getPosterPath().hashCode();
+    }
+
     @NonNull
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null){
             LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
             convertView = layoutInflater.inflate(R.layout.grid_item_movie,parent,false);
-            /*rootView = layoutInflater.inflate(R.layout.grid_item_movie,parent,false);
-            ImageView imageView = (ImageView) rootView.findViewById(R.id.grid_item_movie_imageview);
-            Picasso.with(context).load(movieList.get(position).getPosterPath()).into(imageView);*/
         }
         Picasso.with(context).load(movieList.get(position).getPosterPath()).into((ImageView) convertView);
         return convertView;

@@ -33,7 +33,8 @@ public class MovieFragment extends Fragment {
 
 
     private MovieAdapter movieAdapter;
-    public static final String LOG_TAG = MovieFragment.class.getSimpleName();
+    private static final String LOG_TAG = MovieFragment.class.getSimpleName();
+    private String sortPreference;
 
     public MovieFragment() {
     }
@@ -52,16 +53,51 @@ public class MovieFragment extends Fragment {
         return rootView;
     }
 
+    /**
+     * OnResume method is called when fragment is visible to the user and is actively running.
+     * OnResume method is used to update the GridView by calling UpdateMovieGrid method
+     * During the first callback, since the movieAdapter contains no items(The movie adapter is set to
+     * empty ArrayList in the onCreateView method) UpdateMovieGrid method will be called. When onResume is called
+     * after coming back from setting activity then the selected sharepreference is compared with the sort order
+     * which was used when the grid view is currently populated. If there is a difference in selected sort order
+     * in the settingsactivity and the populated gridview sort order then only the UpdatMovieGrid is called. If both
+     * values are same, it is not required to update the GridView as it is already updated
+     */
+    @Override
+    public void onResume() {
+        Log.i(LOG_TAG,"The Fragment has been resumed");
+        super.onResume();
+        if(movieAdapter.getCount() == 0){
+            Log.i(LOG_TAG,"movieAdapter 0 check");
+            updateMovieGrid();
+        }else{
+            Log.i(LOG_TAG,"Inside else");
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String preferencesString = preferences.getString(getString(R.string.pref_sortby_key),getString(R.string.pref_sortby_popularity));
+            Log.i(LOG_TAG,"Preference values" + sortPreference + ":" + preferencesString);
+            if (!preferencesString.equalsIgnoreCase(sortPreference)){
+                Log.i(LOG_TAG,"The UpdateGrid is called");
+                updateMovieGrid();
+            }
+        }
+    }
+
+    /**
+     * onStart()method is called when the fragment is visible to the user
+     * When the control comes back from the Settings activity onStart callback method
+     * is called.
+     */
     @Override
     public void onStart() {
+        Log.i(LOG_TAG,"mAdapter Count" + movieAdapter.getCount());
+        Log.i(LOG_TAG,"The Fragment has been started");
         super.onStart();
-        updateMovieGrid();
     }
 
     private void updateMovieGrid() {
         FetchMovieTask movieTask = new FetchMovieTask();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String sortPreference = preferences.getString(getString(R.string.pref_sortby_key),getString(R.string.pref_sortby_popularity));
+        sortPreference = preferences.getString(getString(R.string.pref_sortby_key),getString(R.string.pref_sortby_popularity));
         movieTask.execute(sortPreference);
     }
 
@@ -145,13 +181,14 @@ public class MovieFragment extends Fragment {
             }
         }
 
+
         private ArrayList<TMDBMovie> getMovieDataFromJSON(String movieString) throws JSONException {
             final String TMDB_RESULTS = "results";
             final String TMDB_OVERVIEW = "overview";
             final String TMDB_ORIGINALTITLE = "original_title";
             final String TMDB_POSTERPATH = "poster_path";
             final String TMDB_VOTEAVERAGE = "vote_average";
-            final String TMDB_POSTERBASEURL = "http://image.tmdb.org/t/p/w500";
+            final String TMDB_POSTERBASEURL = "http://image.tmdb.org/t/p/w185";
             final String TMDB_RELEASEDATE = "release_date";
 
             JSONObject tmdbJSONResponse = new JSONObject(movieString);
@@ -167,10 +204,10 @@ public class MovieFragment extends Fragment {
                 movieList.add(movie);
             }
             // To be deleted
-            for (TMDBMovie mov: movieList
+            /*for (TMDBMovie mov: movieList
                  ) {
                 Log.i(LOG_TAG, "The movie is " + mov.getOriginalTitle() + " : " + mov.getOverview() );
-            }
+            }*/
             return movieList;
         }
     }

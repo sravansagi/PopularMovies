@@ -5,10 +5,10 @@
     android:layout_height="match_parent"
     android:id="@+id/frame_moviefragment"
     tools:context="com.sravan.ad.popularmovies.MovieFragment"
-    android:paddingTop="@dimen/activity_horizontal_margin"
-    android:paddingBottom="@dimen/activity_horizontal_margin"
-    android:paddingRight="0dp"
-    android:paddingLeft="0dp">
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:paddingRight="10dp"
+    android:paddingLeft="10dp">
 
     <GridView
         android:layout_width="match_parent"
@@ -17,7 +17,8 @@
         android:gravity="center"
         android:numColumns="auto_fit"
         android:stretchMode="columnWidth"
-        >
-    </GridView>
+        android:horizontalSpacing="10dp"
+        android:verticalSpacing="10dp"
+        />
 
 </FrameLayout>

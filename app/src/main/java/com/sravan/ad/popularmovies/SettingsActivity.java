@@ -5,6 +5,7 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 /**
  * Created by HP on 1/8/2017.
@@ -13,6 +14,7 @@ import android.preference.PreferenceManager;
 public class SettingsActivity extends PreferenceActivity
         implements Preference.OnPreferenceChangeListener {
 
+    private final static String LOG_CAT = SettingsActivity.class.getSimpleName();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,6 +29,14 @@ public class SettingsActivity extends PreferenceActivity
                 .getString(preference.getKey(),""));
     }
 
+    /**
+     * The onPreferenceChange method is called when there is a change in any of the preference
+     * value or even when the same preference value is selected again by the User.
+     * It is also called when setting activity is started.
+     * @param preference
+     * @param newValue
+     * @return
+     */
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         String stringValue = newValue.toString();
