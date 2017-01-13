@@ -1,5 +1,6 @@
 package com.sravan.ad.popularmovies;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 import com.sravan.ad.popularmovies.utilities.MovieAdapter;
@@ -50,6 +52,19 @@ public class MovieFragment extends Fragment {
         movieAdapter = new MovieAdapter(getContext(),new ArrayList<TMDBMovie>());
         GridView movieGridView = (GridView) rootView.findViewById(R.id.gridview_moviefragment);
         movieGridView.setAdapter(movieAdapter);
+        movieGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TMDBMovie movie = movieAdapter.getItem(position);
+                Intent intent = new Intent(getActivity(),DetailActivity.class)
+                        .putExtra("MOVIE_TITLE",movie.getOriginalTitle())
+                        .putExtra("MOVIE_POSTERPATH",movie.getPosterPath())
+                        .putExtra("MOVIE_RELEASEDATE",movie.getReleaseDate())
+                        .putExtra("MOVIE_OVERVIEW",movie.getOverview())
+                        .putExtra("MOVIE_VOTE",movie.getVoteAverage());
+                startActivity(intent);
+            }
+        });
         return rootView;
     }
 
@@ -65,18 +80,13 @@ public class MovieFragment extends Fragment {
      */
     @Override
     public void onResume() {
-        Log.i(LOG_TAG,"The Fragment has been resumed");
         super.onResume();
         if(movieAdapter.getCount() == 0){
-            Log.i(LOG_TAG,"movieAdapter 0 check");
             updateMovieGrid();
         }else{
-            Log.i(LOG_TAG,"Inside else");
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
             String preferencesString = preferences.getString(getString(R.string.pref_sortby_key),getString(R.string.pref_sortby_popularity));
-            Log.i(LOG_TAG,"Preference values" + sortPreference + ":" + preferencesString);
             if (!preferencesString.equalsIgnoreCase(sortPreference)){
-                Log.i(LOG_TAG,"The UpdateGrid is called");
                 updateMovieGrid();
             }
         }
@@ -89,11 +99,14 @@ public class MovieFragment extends Fragment {
      */
     @Override
     public void onStart() {
-        Log.i(LOG_TAG,"mAdapter Count" + movieAdapter.getCount());
-        Log.i(LOG_TAG,"The Fragment has been started");
         super.onStart();
     }
 
+    /**
+     * updateMovieGrid method creates an object for async task for fetching the movies and executes
+     * the task by getting the sort preference selected by the user. FetchMovieTask fetches movies with
+     * vote count more than 1000.
+     */
     private void updateMovieGrid() {
         FetchMovieTask movieTask = new FetchMovieTask();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -111,7 +124,7 @@ public class MovieFragment extends Fragment {
             if (params.length == 0){
                 return null;
             }
-            final String API_KEY = "825205bc0a62ded8dc369348761dcef1";
+            final String API_KEY = "Please provide an API key";
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
             String movieString = null;
@@ -121,11 +134,13 @@ public class MovieFragment extends Fragment {
                 final String SORT_BY_QUERY_PARAM = "sort_by";
                 String SortByQueryValue = params[0];
                 final String API_QUERY_PARAM = "api_key";
+                final String VOTECOUNT_QUERY_PARAM = "vote_count.gte";
+                final String VOTECOUNT_QUERY_VALUE = "1000";
                 Uri movieFetchQuery = Uri.parse(TMDB_DISCOVER_URL).buildUpon()
                         .appendQueryParameter(SORT_BY_QUERY_PARAM,SortByQueryValue)
                         .appendQueryParameter(API_QUERY_PARAM, API_KEY)
+                        .appendQueryParameter(VOTECOUNT_QUERY_PARAM,VOTECOUNT_QUERY_VALUE)
                         .build();
-                Log.i(LOG_TAG,"The URL" + movieFetchQuery.toString());
                 URL movieUrl = new URL(movieFetchQuery.toString());
                 urlConnection = (HttpURLConnection) movieUrl.openConnection();
                 urlConnection.setRequestMethod("GET");
@@ -181,6 +196,12 @@ public class MovieFragment extends Fragment {
             }
         }
 
+        /**
+         * This method parses the JSON data received from tmdb API
+         * @param movieString
+         * @return
+         * @throws JSONException
+         */
 
         private ArrayList<TMDBMovie> getMovieDataFromJSON(String movieString) throws JSONException {
             final String TMDB_RESULTS = "results";
@@ -190,6 +211,7 @@ public class MovieFragment extends Fragment {
             final String TMDB_VOTEAVERAGE = "vote_average";
             final String TMDB_POSTERBASEURL = "http://image.tmdb.org/t/p/w185";
             final String TMDB_RELEASEDATE = "release_date";
+
 
             JSONObject tmdbJSONResponse = new JSONObject(movieString);
             JSONArray tmdbResultsArray = tmdbJSONResponse.getJSONArray(TMDB_RESULTS);
@@ -204,10 +226,10 @@ public class MovieFragment extends Fragment {
                 movieList.add(movie);
             }
             // To be deleted
-            /*for (TMDBMovie mov: movieList
+            for (TMDBMovie mov: movieList
                  ) {
                 Log.i(LOG_TAG, "The movie is " + mov.getOriginalTitle() + " : " + mov.getOverview() );
-            }*/
+            }
             return movieList;
         }
     }

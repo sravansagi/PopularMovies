@@ -14,7 +14,7 @@ import android.util.Log;
 public class SettingsActivity extends PreferenceActivity
         implements Preference.OnPreferenceChangeListener {
 
-    private final static String LOG_CAT = SettingsActivity.class.getSimpleName();
+    private final static String LOG_TAG = SettingsActivity.class.getSimpleName();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

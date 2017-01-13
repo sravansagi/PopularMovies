@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 public class MovieAdapter extends ArrayAdapter<TMDBMovie> {
 
-    public final static String LOG_CAT = MovieAdapter.class.getSimpleName();
+    public final static String LOG_TAG = MovieAdapter.class.getSimpleName();
 
     Context context;
     ArrayList<TMDBMovie> movieList ;
