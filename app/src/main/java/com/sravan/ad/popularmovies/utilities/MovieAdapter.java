@@ -2,7 +2,6 @@ package com.sravan.ad.popularmovies.utilities;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,7 +41,11 @@ public class MovieAdapter extends ArrayAdapter<TMDBMovie> {
             LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
             convertView = layoutInflater.inflate(R.layout.grid_item_movie,parent,false);
         }
-        Picasso.with(context).load(movieList.get(position).getPosterPath()).into((ImageView) convertView);
+        Picasso.with(context)
+                .load(movieList.get(position).getPosterPath())
+                .placeholder(R.drawable.loading_image)
+                .error(R.drawable.error_image)
+                .into((ImageView) convertView);
         return convertView;
     }
 }

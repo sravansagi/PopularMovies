@@ -48,6 +48,7 @@ public class MovieFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         View rootView = inflater.inflate(R.layout.fragment_main,container,false);
         movieAdapter = new MovieAdapter(getContext(),new ArrayList<TMDBMovie>());
         GridView movieGridView = (GridView) rootView.findViewById(R.id.gridview_moviefragment);
@@ -116,7 +117,7 @@ public class MovieFragment extends Fragment {
 
     public class FetchMovieTask extends AsyncTask<String,Void,ArrayList<TMDBMovie>>{
 
-        public final String LOG_TAG = FetchMovieTask.class.getSimpleName();
+        private final String LOG_TAG = FetchMovieTask.class.getSimpleName();
 
         @Override
         protected ArrayList<TMDBMovie> doInBackground(String... params) {
@@ -124,22 +125,16 @@ public class MovieFragment extends Fragment {
             if (params.length == 0){
                 return null;
             }
-            final String API_KEY = "Please provide an API key";
+            final String API_KEY = "Please provide the tmdb API";
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
             String movieString = null;
 
             try {
-                final String TMDB_DISCOVER_URL = "https://api.themoviedb.org/3/discover/movie?";
-                final String SORT_BY_QUERY_PARAM = "sort_by";
-                String SortByQueryValue = params[0];
+                final String TMDB_DISCOVER_URL = getTMDBBaseUrl(params[0]);
                 final String API_QUERY_PARAM = "api_key";
-                final String VOTECOUNT_QUERY_PARAM = "vote_count.gte";
-                final String VOTECOUNT_QUERY_VALUE = "1000";
                 Uri movieFetchQuery = Uri.parse(TMDB_DISCOVER_URL).buildUpon()
-                        .appendQueryParameter(SORT_BY_QUERY_PARAM,SortByQueryValue)
                         .appendQueryParameter(API_QUERY_PARAM, API_KEY)
-                        .appendQueryParameter(VOTECOUNT_QUERY_PARAM,VOTECOUNT_QUERY_VALUE)
                         .build();
                 URL movieUrl = new URL(movieFetchQuery.toString());
                 urlConnection = (HttpURLConnection) movieUrl.openConnection();
@@ -225,12 +220,24 @@ public class MovieFragment extends Fragment {
                 movie.setReleaseDate(tmdbResultsArray.getJSONObject(i).getString(TMDB_RELEASEDATE));
                 movieList.add(movie);
             }
-            // To be deleted
-            for (TMDBMovie mov: movieList
-                 ) {
-                Log.i(LOG_TAG, "The movie is " + mov.getOriginalTitle() + " : " + mov.getOverview() );
-            }
             return movieList;
         }
     }
+
+    /**
+     * This method return the TMDB Url based on the sort preference selected
+     *
+     * @param sortPreference
+     * @return The TMDB URL based in the sortPreference value. If sortPreference is popular then
+     * the TMDB URL for the popular movies end point is returned. Similarly if the sortPreference is top_rated
+     * the top rated movies end point is returned.
+     */
+    private String getTMDBBaseUrl(String sortPreference){
+            if(sortPreference.equals("popular")){
+                return "https://api.themoviedb.org/3/movie/popular?";
+            }
+            else{
+                return "https://api.themoviedb.org/3/movie/top_rated?";
+            }
+        }
 }
