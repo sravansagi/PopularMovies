@@ -59,11 +59,7 @@ public class MovieFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TMDBMovie movie = movieAdapter.getItem(position);
                 Intent intent = new Intent(getActivity(),DetailActivity.class)
-                        .putExtra("MOVIE_TITLE",movie.getOriginalTitle())
-                        .putExtra("MOVIE_POSTERPATH",movie.getPosterPath())
-                        .putExtra("MOVIE_RELEASEDATE",movie.getReleaseDate())
-                        .putExtra("MOVIE_OVERVIEW",movie.getOverview())
-                        .putExtra("MOVIE_VOTE",movie.getVoteAverage());
+                        .putExtra(Intent.EXTRA_TEXT,movie);
                 startActivity(intent);
             }
         });

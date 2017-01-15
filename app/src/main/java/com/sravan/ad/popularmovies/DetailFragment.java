@@ -9,8 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
+import com.sravan.ad.popularmovies.utilities.TMDBMovie;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -45,13 +47,21 @@ public class DetailFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_detail,container,false);
         Intent intent = getActivity().getIntent();
         ButterKnife.bind(this,rootView);
-        if (intent!= null &&
-            intent.getStringExtra("MOVIE_TITLE").length() > 0){
-            title.setText(intent.getStringExtra("MOVIE_TITLE"));
-            Picasso.with(getContext()).load(intent.getStringExtra("MOVIE_POSTERPATH")).into(poster);
-            overview.setText(intent.getStringExtra("MOVIE_OVERVIEW"));
-            movieRating.setText(intent.getStringExtra("MOVIE_VOTE") +"/10");
-            movieReleaseDate.setText(intent.getStringExtra("MOVIE_RELEASEDATE"));
+        if (intent!= null){
+            TMDBMovie movie= (TMDBMovie) intent.getParcelableExtra(Intent.EXTRA_TEXT);
+            if (movie == null){
+                Toast.makeText(getContext(),"Unable to display the movie details", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                title.setText(movie.getOriginalTitle());
+                Picasso.with(getContext()).load(movie.getPosterPath()).into(poster);
+                overview.setText(movie.getOverview());
+                movieRating.setText(movie.getVoteAverage() +"/10");
+                movieReleaseDate.setText(movie.getReleaseDate());
+            }
+        }
+        else{
+            Toast.makeText(getContext(),"Unable to display the movie details", Toast.LENGTH_SHORT).show();
         }
         return rootView;
     }

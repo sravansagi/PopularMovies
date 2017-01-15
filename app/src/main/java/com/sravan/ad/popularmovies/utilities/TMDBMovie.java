@@ -1,10 +1,13 @@
 package com.sravan.ad.popularmovies.utilities;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by Sravan on 1/4/2017.
  */
 
-public class TMDBMovie {
+public class TMDBMovie implements Parcelable {
     private String posterPath;
     private String overview;
     private String releaseDate;
@@ -61,4 +64,38 @@ public class TMDBMovie {
     public void setVoteAverage(String voteAverage) {
         this.voteAverage = voteAverage;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.posterPath);
+        dest.writeString(this.overview);
+        dest.writeString(this.releaseDate);
+        dest.writeString(this.originalTitle);
+        dest.writeString(this.voteAverage);
+    }
+
+    protected TMDBMovie(Parcel in) {
+        this.posterPath = in.readString();
+        this.overview = in.readString();
+        this.releaseDate = in.readString();
+        this.originalTitle = in.readString();
+        this.voteAverage = in.readString();
+    }
+
+    public static final Parcelable.Creator<TMDBMovie> CREATOR = new Parcelable.Creator<TMDBMovie>() {
+        @Override
+        public TMDBMovie createFromParcel(Parcel source) {
+            return new TMDBMovie(source);
+        }
+
+        @Override
+        public TMDBMovie[] newArray(int size) {
+            return new TMDBMovie[size];
+        }
+    };
 }
