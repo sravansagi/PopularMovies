@@ -125,7 +125,7 @@ public class MovieFragment extends Fragment {
             if (params.length == 0){
                 return null;
             }
-            final String API_KEY = "Please provide the tmdb API";
+            final String API_KEY = "825205bc0a62ded8dc369348761dcef1";
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
             String movieString = null;
@@ -222,17 +222,15 @@ public class MovieFragment extends Fragment {
             }
             return movieList;
         }
-    }
-
-    /**
-     * This method return the TMDB Url based on the sort preference selected
-     *
-     * @param sortPreference
-     * @return The TMDB URL based in the sortPreference value. If sortPreference is popular then
-     * the TMDB URL for the popular movies end point is returned. Similarly if the sortPreference is top_rated
-     * the top rated movies end point is returned.
-     */
-    private String getTMDBBaseUrl(String sortPreference){
+        /**
+         * This method return the TMDB Url based on the sort preference selected
+         *
+         * @param sortPreference
+         * @return The TMDB URL based in the sortPreference value. If sortPreference is popular then
+         * the TMDB URL for the popular movies end point is returned. Similarly if the sortPreference is top_rated
+         * the top rated movies end point is returned.
+         */
+        private String getTMDBBaseUrl(String sortPreference){
             if(sortPreference.equals("popular")){
                 return "https://api.themoviedb.org/3/movie/popular?";
             }
@@ -240,4 +238,7 @@ public class MovieFragment extends Fragment {
                 return "https://api.themoviedb.org/3/movie/top_rated?";
             }
         }
+    }
+
+
 }
