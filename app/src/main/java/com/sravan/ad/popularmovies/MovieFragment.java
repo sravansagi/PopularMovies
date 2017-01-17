@@ -108,7 +108,7 @@ public class MovieFragment extends Fragment {
     private void updateMovieGrid() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sortPreference = preferences.getString(getString(R.string.pref_sortby_key),getString(R.string.pref_sortby_popularity));
-        final String API_PARAM = "api_key=825205bc0a62ded8dc369348761dcef1";
+        final String API_PARAM = "api_key=ProvideanAPIKey";
         String TMDB_DISCOVER_URL = getTMDBBaseUrl(sortPreference) + API_PARAM ;
 
         // The String resquest is created which will be added to the request queue to get processed;
