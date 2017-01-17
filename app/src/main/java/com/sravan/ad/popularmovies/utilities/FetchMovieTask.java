@@ -45,7 +45,7 @@ public class FetchMovieTask extends AsyncTask<String,Void,ArrayList<TMDBMovie>> 
         if (params.length == 0){
             return null;
         }
-        final String API_KEY = "825205bc0a62ded8dc369348761dcef1";
+        final String API_KEY = "Provide the API Key";
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String movieString = null;
