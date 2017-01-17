@@ -15,18 +15,17 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
-import com.sravan.ad.popularmovies.utilities.FetchMovieTask;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.sravan.ad.popularmovies.utilities.FetchSingleton;
 import com.sravan.ad.popularmovies.utilities.MovieAdapter;
 import com.sravan.ad.popularmovies.utilities.TMDBMovie;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -35,17 +34,18 @@ import java.util.ArrayList;
 
 public class MovieFragment extends Fragment {
 
-
+    RequestQueue fetchRequestQueue;
     private MovieAdapter movieAdapter;
     private static final String LOG_TAG = MovieFragment.class.getSimpleName();
     private String sortPreference;
-
+    public static final String TAG = "MyTag";
     public MovieFragment() {
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        fetchRequestQueue = FetchSingleton.getInstance(this.getActivity().getApplicationContext()).getRequestQueue();
     }
 
     @Override
@@ -101,15 +101,89 @@ public class MovieFragment extends Fragment {
     }
 
     /**
-     * updateMovieGrid method creates an object for async task for fetching the movies and executes
-     * the task by getting the sort preference selected by the user. FetchMovieTask fetches movies with
+     * updateMovieGrid method uses Volley for fetching the movies and executes
+     * the task by getting the sort preference selected by the user. fetches movies with
      * vote count more than 1000.
      */
     private void updateMovieGrid() {
-        FetchMovieTask movieTask = new FetchMovieTask(movieAdapter, getContext());
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sortPreference = preferences.getString(getString(R.string.pref_sortby_key),getString(R.string.pref_sortby_popularity));
-        movieTask.execute(sortPreference);
+        final String API_PARAM = "api_key=825205bc0a62ded8dc369348761dcef1";
+        String TMDB_DISCOVER_URL = getTMDBBaseUrl(sortPreference) + API_PARAM ;
+
+        // The String resquest is created which will be added to the request queue to get processed;
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, TMDB_DISCOVER_URL ,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        ArrayList<TMDBMovie> tmdbMovies = null;
+                        try {
+                            tmdbMovies = getMovieDataFromJSON(response);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        if (tmdbMovies != null){
+                            movieAdapter.clear();
+                            movieAdapter.addAll(tmdbMovies);
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
+                });
+        // The tag is used here to cancel the request when the fragment is stopped
+        stringRequest.setTag(TAG);
+        FetchSingleton.getInstance(this.getActivity()).addToRequestQueue(stringRequest);
+    }
+
+    private String getTMDBBaseUrl(String sortPreference){
+        if(sortPreference.equals("popular")){
+            return "https://api.themoviedb.org/3/movie/popular?";
+        }
+        else{
+            return "https://api.themoviedb.org/3/movie/top_rated?";
+        }
+    }
+
+    /**
+     * In the OnStop method we are cancelling all the network requests are not still waiting for in the
+     * queue for the Network Dispatcher to handle them. Cancel will be used when many network calls are made
+     *
+     */
+    @Override
+    public void onStop() {
+        super.onStop();
+        if(fetchRequestQueue != null){
+            fetchRequestQueue.cancelAll(TAG);
+        }
+    }
+
+    private ArrayList<TMDBMovie> getMovieDataFromJSON(String movieString) throws JSONException {
+        final String TMDB_RESULTS = "results";
+        final String TMDB_OVERVIEW = "overview";
+        final String TMDB_ORIGINALTITLE = "original_title";
+        final String TMDB_POSTERPATH = "poster_path";
+        final String TMDB_VOTEAVERAGE = "vote_average";
+        final String TMDB_POSTERBASEURL = "http://image.tmdb.org/t/p/w185";
+        final String TMDB_RELEASEDATE = "release_date";
+
+
+        JSONObject tmdbJSONResponse = new JSONObject(movieString);
+        JSONArray tmdbResultsArray = tmdbJSONResponse.getJSONArray(TMDB_RESULTS);
+        ArrayList<TMDBMovie> movieList = new ArrayList<TMDBMovie>();
+        for (int i = 0; i < tmdbResultsArray.length() ; i++) {
+            TMDBMovie movie = new TMDBMovie();
+            movie.setOriginalTitle(tmdbResultsArray.getJSONObject(i).getString(TMDB_ORIGINALTITLE));
+            movie.setOverview(tmdbResultsArray.getJSONObject(i).getString(TMDB_OVERVIEW));
+            movie.setPosterPath(TMDB_POSTERBASEURL + "/" +tmdbResultsArray.getJSONObject(i).getString(TMDB_POSTERPATH));
+            movie.setVoteAverage(tmdbResultsArray.getJSONObject(i).getString(TMDB_VOTEAVERAGE));
+            movie.setReleaseDate(tmdbResultsArray.getJSONObject(i).getString(TMDB_RELEASEDATE));
+            movieList.add(movie);
+        }
+        return movieList;
     }
 
 }
