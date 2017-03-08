@@ -1,5 +1,6 @@
-package com.sravan.ad.popularmovies.utilities;
+package com.sravan.ad.popularmovies.data;
 
+import android.content.ContentValues;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -99,7 +100,19 @@ public class TMDBMovie implements Parcelable {
         this.movieId = in.readString();
     }
 
-    public static final Parcelable.Creator<TMDBMovie> CREATOR = new Parcelable.Creator<TMDBMovie>() {
+    public ContentValues getContentValue(){
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_ID, this.movieId);
+        contentValues.put(MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_TITLE,this.originalTitle);
+        contentValues.put(MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_POSTER_PATH,this.posterPath);
+        contentValues.put(MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_OVERVIEW,this.overview);
+        contentValues.put(MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_VOTE_AVERAGE,this.voteAverage);
+        contentValues.put(MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_RELEASE_DATE,this.releaseDate);
+        return contentValues;
+    }
+
+
+   public static final Parcelable.Creator<TMDBMovie> CREATOR = new Parcelable.Creator<TMDBMovie>() {
         @Override
         public TMDBMovie createFromParcel(Parcel source) {
             return new TMDBMovie(source);
