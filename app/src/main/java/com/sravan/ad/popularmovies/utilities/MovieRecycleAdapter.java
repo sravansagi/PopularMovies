@@ -1,7 +1,6 @@
 package com.sravan.ad.popularmovies.utilities;
 
 import android.content.Context;
-import android.media.Image;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +9,7 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 import com.sravan.ad.popularmovies.R;
+import com.sravan.ad.popularmovies.data.TMDBMovie;
 
 import java.util.ArrayList;
 

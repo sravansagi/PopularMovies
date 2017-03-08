@@ -10,6 +10,8 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 import com.sravan.ad.popularmovies.R;
+import com.sravan.ad.popularmovies.data.TMDBMovie;
+
 import java.util.ArrayList;
 
 /**

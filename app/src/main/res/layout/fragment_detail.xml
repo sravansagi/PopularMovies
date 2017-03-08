@@ -33,8 +33,9 @@
                 android:padding="24dp"
                 />
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:orientation="vertical">
                 <TextView
                     android:layout_width="match_parent"
@@ -54,12 +55,13 @@
                     android:textStyle="normal|bold"
                     android:textSize="24sp"
                     android:textAlignment="center" />
+
                 <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
                     android:id="@+id/favorites_button"
-                    android:text="Add to Favorites"
-                    />
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="Add To Favourites"/>
             </LinearLayout>
         </LinearLayout>
         <TextView

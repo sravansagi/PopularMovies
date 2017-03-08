@@ -1,10 +1,17 @@
 package com.sravan.ad.popularmovies.utilities;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.sravan.ad.popularmovies.R;
+import com.sravan.ad.popularmovies.data.MovieContract;
+import com.sravan.ad.popularmovies.data.TMDBMovie;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,70 +52,109 @@ public class FetchMovieTask extends AsyncTask<String,Void,ArrayList<TMDBMovie>> 
         if (params.length == 0){
             return null;
         }
-        final String API_KEY = "Please provide the API key here";
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
-        String movieString = null;
+        // The following check is added to check the preference selected by the user.
+        if (params[0].equalsIgnoreCase(context.getString(R.string.pref_sortby_favourites))){
+            Cursor cursor = context.getContentResolver().query(MovieContract.FavoriteMovieEntry.CONTENT_URI,
+                 MovieContract.FavoriteMovieEntry.MOVIE_COLUMNS,
+                 null,
+                 null,
+                 null);
+            if (cursor.getCount() < 1){
+                return null;
+            }else {
+                ArrayList<TMDBMovie> movieArrayList = new ArrayList<TMDBMovie>();
+                while (cursor.moveToNext()) {
+                    TMDBMovie movie = new TMDBMovie();
+                    movie.setMovieId(cursor.getInt(0)+"");
+                    movie.setOriginalTitle(cursor.getString(1));
+                    movie.setOverview(cursor.getString(3));
+                    movie.setPosterPath(cursor.getString(2));
+                    movie.setReleaseDate(cursor.getString(5));
+                    movie.setVoteAverage(cursor.getString(4));
+                    movieArrayList.add(movie);
+                }
+                return movieArrayList;
+            }
 
-        try {
-            final String TMDB_DISCOVER_URL = getTMDBBaseUrl(params[0]);
-            final String API_QUERY_PARAM = "api_key";
-            Uri movieFetchQuery = Uri.parse(TMDB_DISCOVER_URL).buildUpon()
-                    .appendQueryParameter(API_QUERY_PARAM, API_KEY)
-                    .build();
-            URL movieUrl = new URL(movieFetchQuery.toString());
-            urlConnection = (HttpURLConnection) movieUrl.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-            InputStream inputStream = urlConnection.getInputStream();
-            if (inputStream == null){
-                //No Data for processing
+        }else{
+            final String API_KEY = "Please provide the API key";
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+            String movieString = null;
+
+            try {
+                final String TMDB_DISCOVER_URL = getTMDBBaseUrl(params[0]);
+                final String API_QUERY_PARAM = "api_key";
+                Uri movieFetchQuery = Uri.parse(TMDB_DISCOVER_URL).buildUpon()
+                        .appendQueryParameter(API_QUERY_PARAM, API_KEY)
+                        .build();
+                URL movieUrl = new URL(movieFetchQuery.toString());
+                urlConnection = (HttpURLConnection) movieUrl.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+                InputStream inputStream = urlConnection.getInputStream();
+                if (inputStream == null){
+                    //No Data for processing
+                    return null;
+                }
+                StringBuffer buffer = new StringBuffer();
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+                String line;
+                while ((line = reader.readLine())!=null){
+                    buffer.append(line);
+                }
+                if (buffer.length() == 0){
+                    return null;
+                }
+                movieString = buffer.toString();
+            } catch (java.io.IOException e) {
+                Log.e(LOG_TAG,"I/O Error", e);
                 return null;
             }
-            StringBuffer buffer = new StringBuffer();
-            reader = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
-            while ((line = reader.readLine())!=null){
-                buffer.append(line);
-            }
-            if (buffer.length() == 0){
-                return null;
-            }
-            movieString = buffer.toString();
-        } catch (java.io.IOException e) {
-            Log.e(LOG_TAG,"I/O Error", e);
-            return null;
-        }
-        finally {
-            if (urlConnection != null){
-                urlConnection.disconnect();
-            }
-            if  (reader!=null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    Log.e(LOG_TAG, "Error closing stream",e);
+            finally {
+                if (urlConnection != null){
+                    urlConnection.disconnect();
+                }
+                if  (reader!=null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        Log.e(LOG_TAG, "Error closing stream",e);
+                    }
                 }
             }
+            try {
+                return getMovieDataFromJSON(movieString);
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, "Error while processing JSON",e);
+            }
+            return null;
         }
-        try {
-            return getMovieDataFromJSON(movieString);
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, "Error while processing JSON",e);
-        }
-        // If this return is places in the above catch block on start methods is called twice
-        return null;
+
     }
 
     @Override
     protected void onPostExecute(ArrayList<TMDBMovie> tmdbMovies) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String sharedPreference = preferences.getString(context.getString(R.string.pref_sortby_key),context.getString(R.string.pref_sortby_popularity));
+
         if (tmdbMovies != null){
             movieAdapter.updateMovies(tmdbMovies);
             /*movieAdapter.movieList.addAll(tmdbMovies);
             movieAdapter.notifyDataSetChanged();*/
         }
         else{
-            Toast.makeText(context,"Error while connecting to the Internet",Toast.LENGTH_SHORT).show();
+            if (sharedPreference.equalsIgnoreCase(context.getString(R.string.pref_sortby_favourites))){
+                // the movies adapter has to be updated since when all the movies are removed from
+                // favourites then the onPostExecute method will be called using null param. So the adapter is not
+                // updated with 0 movies. To update the adapter in case of 0 movies we have added the following call
+                movieAdapter.updateMovies(new ArrayList<TMDBMovie>());
+                Toast.makeText(context,"There are not favourite movies added",Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(context,"Error while connecting to the Internet. In Case of not network. Please access" +
+                        "favour movies",Toast.LENGTH_SHORT).show();
+            }
+
         }
     }
 
@@ -127,6 +173,7 @@ public class FetchMovieTask extends AsyncTask<String,Void,ArrayList<TMDBMovie>> 
         final String TMDB_VOTEAVERAGE = "vote_average";
         final String TMDB_POSTERBASEURL = "http://image.tmdb.org/t/p/w185";
         final String TMDB_RELEASEDATE = "release_date";
+        final String TMDB_ID = "id";
 
 
         JSONObject tmdbJSONResponse = new JSONObject(movieString);
@@ -139,6 +186,7 @@ public class FetchMovieTask extends AsyncTask<String,Void,ArrayList<TMDBMovie>> 
             movie.setPosterPath(TMDB_POSTERBASEURL + "/" +tmdbResultsArray.getJSONObject(i).getString(TMDB_POSTERPATH));
             movie.setVoteAverage(tmdbResultsArray.getJSONObject(i).getString(TMDB_VOTEAVERAGE));
             movie.setReleaseDate(tmdbResultsArray.getJSONObject(i).getString(TMDB_RELEASEDATE));
+            movie.setMovieId(tmdbResultsArray.getJSONObject(i).getString(TMDB_ID));
             movieList.add(movie);
         }
         return movieList;
