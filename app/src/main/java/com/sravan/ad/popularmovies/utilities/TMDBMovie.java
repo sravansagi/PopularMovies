@@ -13,13 +13,15 @@ public class TMDBMovie implements Parcelable {
     private String releaseDate;
     private String originalTitle;
     private String voteAverage;
+    private String movieId;
 
-    public TMDBMovie(String posterPath, String overview, String releaseDate, String[] genreIds, String id, String originalTitle, String title, String backdropPath, String voteAverage) {
+    public TMDBMovie(String posterPath, String overview, String releaseDate, String[] genreIds, String id, String originalTitle, String title, String backdropPath, String voteAverage, String movieId) {
         this.posterPath = posterPath;
         this.overview = overview;
         this.releaseDate = releaseDate;
         this.originalTitle = originalTitle;
         this.voteAverage = voteAverage;
+        this.movieId = movieId;
     }
 
     public TMDBMovie() {
@@ -70,6 +72,14 @@ public class TMDBMovie implements Parcelable {
         return 0;
     }
 
+    public String getMovieId() {
+        return movieId;
+    }
+
+    public void setMovieId(String movieId) {
+        this.movieId = movieId;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.posterPath);
@@ -77,6 +87,7 @@ public class TMDBMovie implements Parcelable {
         dest.writeString(this.releaseDate);
         dest.writeString(this.originalTitle);
         dest.writeString(this.voteAverage);
+        dest.writeString(this.movieId);
     }
 
     protected TMDBMovie(Parcel in) {
@@ -85,6 +96,7 @@ public class TMDBMovie implements Parcelable {
         this.releaseDate = in.readString();
         this.originalTitle = in.readString();
         this.voteAverage = in.readString();
+        this.movieId = in.readString();
     }
 
     public static final Parcelable.Creator<TMDBMovie> CREATOR = new Parcelable.Creator<TMDBMovie>() {

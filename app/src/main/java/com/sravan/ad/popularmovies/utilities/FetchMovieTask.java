@@ -31,10 +31,10 @@ import java.util.ArrayList;
 public class FetchMovieTask extends AsyncTask<String,Void,ArrayList<TMDBMovie>> {
 
     private final String LOG_TAG = FetchMovieTask.class.getSimpleName();
-    MovieAdapter movieAdapter;
+    MovieRecycleAdapter movieAdapter;
     Context context;
 
-    public FetchMovieTask(MovieAdapter movieAdapter, Context context) {
+    public FetchMovieTask(MovieRecycleAdapter movieAdapter, Context context) {
         this.movieAdapter = movieAdapter;
         this.context = context;
     }
@@ -45,7 +45,7 @@ public class FetchMovieTask extends AsyncTask<String,Void,ArrayList<TMDBMovie>> 
         if (params.length == 0){
             return null;
         }
-        final String API_KEY = "Provide the API Key";
+        final String API_KEY = "Please provide the API key here";
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String movieString = null;
@@ -103,8 +103,9 @@ public class FetchMovieTask extends AsyncTask<String,Void,ArrayList<TMDBMovie>> 
     @Override
     protected void onPostExecute(ArrayList<TMDBMovie> tmdbMovies) {
         if (tmdbMovies != null){
-            movieAdapter.clear();
-            movieAdapter.addAll(tmdbMovies);
+            movieAdapter.updateMovies(tmdbMovies);
+            /*movieAdapter.movieList.addAll(tmdbMovies);
+            movieAdapter.notifyDataSetChanged();*/
         }
         else{
             Toast.makeText(context,"Error while connecting to the Internet",Toast.LENGTH_SHORT).show();

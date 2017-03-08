@@ -7,6 +7,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +19,7 @@ import android.widget.Toast;
 
 import com.sravan.ad.popularmovies.utilities.FetchMovieTask;
 import com.sravan.ad.popularmovies.utilities.MovieAdapter;
+import com.sravan.ad.popularmovies.utilities.MovieRecycleAdapter;
 import com.sravan.ad.popularmovies.utilities.TMDBMovie;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,10 +36,11 @@ import java.util.ArrayList;
  * Created by Sravan on 1/3/2017.
  */
 
-public class MovieFragment extends Fragment {
+public class MovieFragment extends Fragment implements MovieRecycleAdapter.Callbacks{
 
 
-    private MovieAdapter movieAdapter;
+    //private MovieAdapter movieAdapter;
+    MovieRecycleAdapter movieRecycleAdapter;
     private static final String LOG_TAG = MovieFragment.class.getSimpleName();
     private String sortPreference;
 
@@ -51,18 +55,11 @@ public class MovieFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main,container,false);
-        movieAdapter = new MovieAdapter(getContext(),new ArrayList<TMDBMovie>());
-        GridView movieGridView = (GridView) rootView.findViewById(R.id.gridview_moviefragment);
-        movieGridView.setAdapter(movieAdapter);
-        movieGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                TMDBMovie movie = movieAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(),DetailActivity.class)
-                        .putExtra(Intent.EXTRA_TEXT,movie);
-                startActivity(intent);
-            }
-        });
+        movieRecycleAdapter = new MovieRecycleAdapter(getContext(),new ArrayList<TMDBMovie>(), this);
+        RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recycleview_moviefragment);
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getContext(),2);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(movieRecycleAdapter);
         return rootView;
     }
 
@@ -79,7 +76,7 @@ public class MovieFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if(movieAdapter.getCount() == 0){
+        if(movieRecycleAdapter.getItemCount() == 0){
             updateMovieGrid();
         }else{
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -106,10 +103,16 @@ public class MovieFragment extends Fragment {
      * vote count more than 1000.
      */
     private void updateMovieGrid() {
-        FetchMovieTask movieTask = new FetchMovieTask(movieAdapter, getContext());
+        FetchMovieTask movieTask = new FetchMovieTask(movieRecycleAdapter, getContext());
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sortPreference = preferences.getString(getString(R.string.pref_sortby_key),getString(R.string.pref_sortby_popularity));
         movieTask.execute(sortPreference);
     }
 
+    @Override
+    public void open(TMDBMovie movie) {
+        Intent intent = new Intent(getActivity(),DetailActivity.class)
+                .putExtra(Intent.EXTRA_TEXT,movie);
+        startActivity(intent);
+    }
 }

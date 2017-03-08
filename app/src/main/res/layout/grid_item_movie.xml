@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--When the width is given as wrap content then the view is becoming very small
+    When the height is given as match parent then there are gaps coming in between the grid-->
 <ImageView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="4dp"
     android:id="@+id/grid_item_movie_imageview"
     android:adjustViewBounds="true"
     android:scaleType="fitCenter">
