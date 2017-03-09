@@ -64,8 +64,6 @@ public class MovieFragment extends Fragment implements MovieRecycleAdapter.Callb
         SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String preferencesString = preference.getString(getString(R.string.pref_sortby_key),getString(R.string.pref_sortby_popularity));
         if(movieRecycleAdapter.getItemCount() == 0 || preferencesString.equalsIgnoreCase(getString(R.string.pref_sortby_favourites))){
-            // ToDo here we need to add the logic for handling if user has selected the fav from setting and
-            // the earlier also the search is made for favoraties
             updateMovieGrid();
         }else{
             if (!preferencesString.equalsIgnoreCase(sortPreference)){

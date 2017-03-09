@@ -73,6 +73,15 @@
             android:text="@string/movie_overview"
             android:textStyle="normal|italic"
             android:textSize="16sp" />
-    </LinearLayout>
 
+        <android.support.v7.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/detail_movie_trailers"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/detail_movie_reviews"/>
+    </LinearLayout>
 </ScrollView>

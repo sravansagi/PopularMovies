@@ -10,6 +10,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.sravan.ad.popularmovies.R;
+import com.sravan.ad.popularmovies.BuildConfig;
 import com.sravan.ad.popularmovies.data.MovieContract;
 import com.sravan.ad.popularmovies.data.TMDBMovie;
 
@@ -77,7 +78,8 @@ public class FetchMovieTask extends AsyncTask<String,Void,ArrayList<TMDBMovie>> 
             }
 
         }else{
-            final String API_KEY = "Please provide the API key";
+            final String API_KEY = BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+            Log.i(LOG_TAG, "APIKEY"+ API_KEY);
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
             String movieString = null;

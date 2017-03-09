@@ -76,14 +76,14 @@ public class MovieRecycleAdapter extends RecyclerView.Adapter<MovieRecycleAdapte
         return movieList.size();
     }
 
-    public TMDBMovie getMovieAtPosition(int position){
+    /*public TMDBMovie getMovieAtPosition(int position){
         if(position > movieList.size()){
             return movieList.get(position);
         }
         else{
             return null;
         }
-    }
+    }*/
 
     public void updateMovies(ArrayList<TMDBMovie> movies){
         movieList.clear();
