@@ -1,6 +1,7 @@
 package com.sravan.ad.popularmovies.utilities;
 
 import android.content.Context;
+import android.os.Parcelable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,6 +46,10 @@ public class MovieRecycleAdapter extends RecyclerView.Adapter<MovieRecycleAdapte
         this.mCallbacks = callbacks;
     }
 
+    public ArrayList<TMDBMovie> getMovies() {
+        return movieList;
+    }
+
     public interface Callbacks {
         void open(TMDBMovie movie);
     }
@@ -73,7 +78,12 @@ public class MovieRecycleAdapter extends RecyclerView.Adapter<MovieRecycleAdapte
 
     @Override
     public int getItemCount() {
-        return movieList.size();
+        if (movieList != null){
+            return movieList.size();
+        }
+        else {
+            return 0;
+        }
     }
 
     /*public TMDBMovie getMovieAtPosition(int position){

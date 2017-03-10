@@ -3,6 +3,7 @@ package com.sravan.ad.popularmovies;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -24,10 +25,15 @@ import java.util.ArrayList;
 public class MovieFragment extends Fragment implements MovieRecycleAdapter.Callbacks{
 
 
+    private static final String GRIDSTATE = "gridstate";
+    private static final String MOVIES = "movies";
     //private MovieAdapter movieAdapter;
     MovieRecycleAdapter movieRecycleAdapter;
     private static final String LOG_TAG = MovieFragment.class.getSimpleName();
     private String sortPreference = "";
+    RecyclerView.LayoutManager layoutManager;
+    //Parcelable mGridState;
+    Bundle savedInstanceState;
 
     public MovieFragment() {
     }
@@ -37,14 +43,46 @@ public class MovieFragment extends Fragment implements MovieRecycleAdapter.Callb
         super.onCreate(savedInstanceState);
     }
 
+    /**
+     *
+     * The onsaved instance state will save the layout position and the movies in case the orientation of the device
+     * changes. The MOVIES key contains the retrieved movies list and the GRIDSTATE contains the position.
+     * @param outState
+     */
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (movieRecycleAdapter.getItemCount() > 0){
+            outState.putParcelableArrayList(MOVIES,movieRecycleAdapter.getMovies());
+        }
+        if (layoutManager != null){
+            outState.putParcelable(GRIDSTATE,layoutManager.onSaveInstanceState());
+        }
+    }
+
+    /**
+     * In onCreateView method we will check the onsaved instance state. If the state is not null then we will get the
+     * movies list and save the state in order to update the position of the movies in the onResume method.
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main,container,false);
-        movieRecycleAdapter = new MovieRecycleAdapter(getContext(),new ArrayList<TMDBMovie>(), this);
+        if (savedInstanceState != null && savedInstanceState.containsKey(MOVIES)){
+            ArrayList<TMDBMovie> movieArrayList = savedInstanceState.getParcelableArrayList(MOVIES);
+            movieRecycleAdapter = new MovieRecycleAdapter(getContext(), movieArrayList, this);
+        } else {
+            movieRecycleAdapter = new MovieRecycleAdapter(getContext(),new ArrayList<TMDBMovie>(), this);
+        }
+
         RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recycleview_moviefragment);
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getContext(),2);
+        layoutManager = new GridLayoutManager(getContext(),2);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(movieRecycleAdapter);
+        this.savedInstanceState = savedInstanceState;
         return rootView;
     }
 
@@ -61,13 +99,24 @@ public class MovieFragment extends Fragment implements MovieRecycleAdapter.Callb
     @Override
     public void onResume() {
         super.onResume();
+        boolean updatedMovies = false;
         SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String preferencesString = preference.getString(getString(R.string.pref_sortby_key),getString(R.string.pref_sortby_popularity));
         if(movieRecycleAdapter.getItemCount() == 0 || preferencesString.equalsIgnoreCase(getString(R.string.pref_sortby_favourites))){
             updateMovieGrid();
+            updatedMovies = true;
         }else{
             if (!preferencesString.equalsIgnoreCase(sortPreference)){
                 updateMovieGrid();
+                updatedMovies = true;
+            }
+        }
+        if (!updatedMovies){
+            if (savedInstanceState != null && savedInstanceState.containsKey(GRIDSTATE)){
+                Parcelable mGridState = savedInstanceState.getParcelable(GRIDSTATE);
+                if (mGridState != null){
+                    layoutManager.onRestoreInstanceState(mGridState);
+                }
             }
         }
     }
